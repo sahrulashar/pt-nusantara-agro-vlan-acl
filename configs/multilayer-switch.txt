@@ -1,0 +1,74 @@
+! =========================================
+! MultilayerSW1 - PT Nusantara Agro
+! =========================================
+
+! --- VLAN Configuration ---
+vlan 10
+ name Manajemen
+vlan 20
+ name Keuangan
+vlan 30
+ name Produksi
+vlan 40
+ name Gudang
+vlan 99
+ name Guest_WiFi
+vlan 999
+ name Native_Unused
+
+! --- SVI (Inter-VLAN Routing) ---
+interface vlan 10
+ ip address 192.168.10.145 255.255.255.240
+ no shutdown
+
+interface vlan 20
+ ip address 192.168.10.65 255.255.255.224
+ no shutdown
+
+interface vlan 30
+ ip address 192.168.10.1 255.255.255.192
+ no shutdown
+
+interface vlan 40
+ ip address 192.168.10.129 255.255.255.240
+ ip access-group ACL-GUDANG in
+ no shutdown
+
+interface vlan 99
+ ip address 192.168.10.97 255.255.255.224
+ ip access-group ACL-GUEST in
+ no shutdown
+
+! --- Enable IP Routing (wajib di multilayer switch) ---
+ip routing
+
+! --- Trunk ke Access Switch ---
+interface range fastEthernet0/1 - 2
+ switchport mode trunk
+ switchport trunk native vlan 999
+
+! --- Link ke Router (routed port) ---
+interface fastEthernet0/24
+ no switchport
+ ip address 192.168.10.161 255.255.255.252
+ no shutdown
+
+! --- Default route ke Router untuk akses internet ---
+ip route 0.0.0.0 0.0.0.0 192.168.10.162
+
+! =========================================
+! Extended ACL
+! =========================================
+
+ip access-list extended ACL-GUDANG
+ 10 permit ip 192.168.10.128 0.0.0.15 192.168.10.0 0.0.0.63
+ 20 deny ip 192.168.10.128 0.0.0.15 192.168.10.64 0.0.0.31
+ 30 deny ip 192.168.10.128 0.0.0.15 192.168.10.144 0.0.0.15
+ 40 permit ip any any
+
+ip access-list extended ACL-GUEST
+ 10 deny ip 192.168.10.96 0.0.0.31 192.168.10.0 0.0.0.63
+ 20 deny ip 192.168.10.96 0.0.0.31 192.168.10.64 0.0.0.31
+ 30 deny ip 192.168.10.96 0.0.0.31 192.168.10.128 0.0.0.15
+ 40 deny ip 192.168.10.96 0.0.0.31 192.168.10.144 0.0.0.15
+ 50 permit ip any any

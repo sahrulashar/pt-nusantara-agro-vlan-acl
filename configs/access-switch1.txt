@@ -1,0 +1,26 @@
+! =========================================
+! AccessSW1 - PT Nusantara Agro
+! Menghubungkan: VLAN 30 (Produksi), VLAN 20 (Keuangan)
+! =========================================
+
+vlan 20
+ name Keuangan
+vlan 30
+ name Produksi
+vlan 999
+ name Native_Unused
+
+! --- Trunk ke Multilayer Switch ---
+interface fastEthernet0/24
+ switchport mode trunk
+ switchport trunk native vlan 999
+
+! --- Access Port Produksi ---
+interface range fastEthernet0/1 - 3
+ switchport mode access
+ switchport access vlan 30
+
+! --- Access Port Keuangan ---
+interface range fastEthernet0/4 - 7
+ switchport mode access
+ switchport access vlan 20

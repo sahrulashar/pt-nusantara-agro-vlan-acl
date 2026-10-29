@@ -1,0 +1,34 @@
+! =========================================
+! AccessSW2 - PT Nusantara Agro
+! Menghubungkan: VLAN 40 (Gudang), VLAN 10 (Manajemen), VLAN 99 (Guest WiFi via AP)
+! =========================================
+
+vlan 10
+ name Manajemen
+vlan 40
+ name Gudang
+vlan 99
+ name Guest_WiFi
+vlan 999
+ name Native_Unused
+
+! --- Trunk ke Multilayer Switch ---
+interface fastEthernet0/24
+ switchport mode trunk
+ switchport trunk native vlan 999
+
+! --- Access Port Gudang ---
+interface range fastEthernet0/1 - 3
+ switchport mode access
+ switchport access vlan 40
+
+! --- Access Port Manajemen ---
+interface range fastEthernet0/4 - 5
+ switchport mode access
+ switchport access vlan 10
+
+! --- Trunk ke Access Point (Guest WiFi) ---
+interface fastEthernet0/6
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan 99
